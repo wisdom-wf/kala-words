@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小卡拉趣味记单词 - 多邻国风格版</title>
+    <style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#FF6B6B;--primary-light:#FF8E8E;--primary-dark:#E85555;--secondary:#4ECDC4;--secondary-light:#7EDDD6;--secondary-dark:#3DB8B0;--bg-main:#FFF9E6;--bg-card:#FFFFFF;--bg-gradient-start:#FFE5D9;--bg-gradient-end:#FFEAA7;--text-primary:#2D3436;--text-secondary:#636E72;--text-light:#B2BEC3;--success:#00B894;--success-light:#55EFC4;--error:#D63031;--error-light:#FF7675;--warning:#FDCB6E;--xp-gold:#FFD93D;--shadow-sm:0 2px 8px rgba(0,0,0,0.1);--shadow-md:0 4px 16px rgba(0,0,0,0.15);--shadow-lg:0 8px 32px rgba(0,0,0,0.2);--shadow-glow-success:0 0 30px rgba(0,184,148,0.6);--radius-sm:12px;--radius-md:20px;--radius-lg:30px;--radius-full:50%;--transition-fast:0.2s;--transition-normal:0.3s}
+body{font-family:'PingFang SC','Helvetica Neue',Arial,sans-serif;background:linear-gradient(135deg,var(--bg-gradient-start),var(--bg-gradient-end));min-height:100vh;color:var(--text-primary);overflow-x:hidden}
+#app{max-width:100%;min-height:100vh;position:relative}
+.top-status-bar{position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,var(--primary),var(--primary-dark));padding:12px 20px;display:flex;justify-content:space-between;align-items:center;z-index:100;box-shadow:var(--shadow-md)}
+.xp-display{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.2);padding:8px 16px;border-radius:var(--radius-lg);color:white;font-weight:600}
+.xp-value{font-size:1.1rem}.level-badge{background:var(--xp-gold);color:var(--text-primary);padding:4px 12px;border-radius:var(--radius-lg);font-weight:700;font-size:0.9rem}
+.streak-display{display:flex;align-items:center;gap:6px;color:white;font-weight:600}
+.streak-icon{font-size:1.3rem;animation:flicker 1s ease-in-out infinite alternate}
+@keyframes flicker{0%{transform:scale(1);filter:brightness(1)}100%{transform:scale(1.1);filter:brightness(1.2)}}
+.page{display:none;min-height:100vh;padding:70px 20px 20px;position:relative}
+.page.active{display:flex;flex-direction:column;animation:fadeIn 0.5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.home-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;text-align:center}
+.character-container{margin-bottom:20px}
+.character-img{width:200px;height:200px;border-radius:var(--radius-full);object-fit:cover;box-shadow:var(--shadow-lg);border:5px solid var(--bg-card)}
+@keyframes idle-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-5px)}50%{transform:translateY(-8px)}75%{transform:translateY(-5px)}}
+.character-idle{animation:idle-bounce 2s ease-in-out infinite}
+@keyframes celebrate-jump{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.15)}}
+.character-celebrate{animation:celebrate-jump 0.6s ease-in-out}
+.character-celebrate .character-img{transform:scale(1.1)}
+@keyframes think-wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}75%{transform:rotate(-5deg)}}
+.character-think{animation:think-wiggle 0.8s ease-in-out}
+.character-think .character-img{animation:none}
+.speaking{animation:speakingBounce 0.5s ease-in-out infinite}
+@keyframes speakingBounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-8px)}50%{transform:translateY(-3px)}75%{transform:translateY(-10px)}}
+.bounce{animation:bounce 1s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+.app-title{font-size:2.2rem;font-weight:700;color:var(--primary);margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,0.1)}
+.app-slogan{font-size:1.3rem;color:var(--secondary);margin-bottom:20px;font-weight:500;animation:wiggle 2s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.level-progress-container{width:100%;max-width:300px;margin-bottom:25px}
+.level-progress-label{display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem;color:var(--text-secondary)}
+.level-progress-bar{height:16px;background:var(--bg-card);border-radius:var(--radius-lg);overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1)}
+.level-progress-fill{height:100%;background:linear-gradient(90deg,var(--xp-gold),#FFB347,var(--primary));border-radius:var(--radius-lg);transition:width 0.5s;overflow:hidden}
+.level-progress-fill::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:shimmer 2s infinite}
+@keyframes shimmer{100%{left:100%}}
+.streak-banner{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#FF6B00,#FF8C00);color:white;padding:10px 25px;border-radius:var(--radius-lg);margin-bottom:20px;box-shadow:var(--shadow-md),0 0 20px rgba(255,107,0,0.3)}
+.streak-fire{font-size:1.8rem;animation:fire-glow 0.5s ease-in-out infinite alternate}
+@keyframes fire-glow{0%{transform:scale(1)}100%{transform:scale(1.15);filter:brightness(1.3) drop-shadow(0 0 10px #FF6B00)}}
+.streak-days{font-size:1.3rem;font-weight:700}
+.btn{border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;transition:all var(--transition-normal);display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;position:relative;overflow:hidden}
+.btn:active{transform:scale(0.95)}.btn:disabled{opacity:0.6;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;box-shadow:var(--shadow-md)}
+.btn-primary:hover{background:linear-gradient(135deg,var(--primary-light),var(--primary));transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.btn-large{padding:18px 50px;font-size:1.3rem;border-radius:var(--radius-lg)}
+.btn-small{padding:12px 30px;font-size:1rem;background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--text-light);margin-top:15px}
+.btn-secondary{background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--text-light)}
+.btn-back{background:var(--bg-card);color:var(--text-secondary);padding:10px 20px;font-size:0.95rem;box-shadow:var(--shadow-sm)}
+.btn-audio{background:linear-gradient(135deg,var(--secondary),var(--secondary-dark));color:white;padding:16px 30px;font-size:1.1rem;box-shadow:var(--shadow-md)}
+.btn-audio.playing{animation:audioPulse 0.5s ease infinite}
+@keyframes audioPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.btn-story{background:linear-gradient(135deg,var(--warning),#F9A825);color:white;padding:12px 24px;font-size:1rem;box-shadow:var(--shadow-sm)}
+.btn-story.playing{animation:storyBtnPulse 0.8s ease infinite}
+@keyframes storyBtnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03);box-shadow:0 0 15px rgba(253,203,110,0.6)}}
+.btn-record{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;padding:16px 30px;font-size:1.1rem;box-shadow:var(--shadow-md)}
+.btn-record.recording{background:linear-gradient(135deg,var(--error),var(--error-light));animation:recordPulse 1s ease infinite}
+@keyframes recordPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.learn-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;padding:10px 0}
+.level-indicator{display:flex;align-items:center;gap:8px;background:var(--bg-card);padding:8px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);font-weight:600;color:var(--text-secondary)}
+.progress-bar{flex:1;height:16px;background:var(--bg-card);border-radius:var(--radius-lg);overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--success));border-radius:var(--radius-lg);transition:width 0.5s cubic-bezier(0.4,0,0.2,1);width:0%;position:relative;overflow:hidden}
+.progress-label{font-size:1rem;font-weight:600;color:var(--text-secondary);min-width:50px;text-align:right}
+.learn-content{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0}
+.learn-character .character-img{width:120px;height:120px}
+.word-card{background:var(--bg-card);padding:25px 50px;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);text-align:center;margin:15px 0;min-width:280px;position:relative;overflow:hidden}
+@keyframes slide-in-right{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)}}
+.word-card-enter{animation:slide-in-right 0.4s ease forwards}
+.word-card.correct::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,184,148,0.3),transparent);animation:green-flash 0.5s ease forwards}
+@keyframes green-flash{0%{left:-100%}100%{left:100%}}
+.word-card.wrong{animation:shake 0.5s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-5px)}20%,40%,60%,80%{transform:translateX(5px)}}
+.word-english{font-size:2.8rem;font-weight:700;color:var(--primary);margin-bottom:8px;letter-spacing:2px}
+.word-chinese{font-size:1.5rem;color:var(--text-secondary)}
+.xp-popup{position:absolute;top:-30px;right:-20px;font-size:1.5rem;font-weight:700;color:var(--xp-gold);text-shadow:0 0 10px rgba(255,217,61,0.5);animation:xp-float 1s ease forwards;pointer-events:none}
+@keyframes xp-float{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.5)}}
+.stars-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1000}
+.star{position:absolute;font-size:2rem;animation:star-fly 1s ease forwards}
+@keyframes star-fly{0%{opacity:1;transform:translate(0,0) scale(0)}50%{opacity:1;transform:translate(var(--tx),var(--ty)) scale(1.2)}100%{opacity:0;transform:translate(calc(var(--tx)*1.5),calc(var(--ty)*1.5)) scale(0.5)}}
+.story-box{background:linear-gradient(135deg,#FFF9E6,#FFF5DB);border:3px solid var(--warning);border-radius:var(--radius-md);padding:20px;margin:15px 0;width:100%;max-width:400px}
+.story-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.story-header-left{display:flex;align-items:center;gap:8px}
+.story-title{font-size:1.1rem;font-weight:600;color:var(--primary)}
+.btn-story-listen{background:linear-gradient(135deg,var(--warning),#FFB300);color:white;padding:8px 16px;font-size:0.9rem;border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);white-space:nowrap}
+.btn-story-listen.playing{animation:storyBtnPulse 0.8s ease infinite}
+.story-content{font-size:1.1rem;line-height:1.8;color:var(--text-primary);text-align:left}
+.action-buttons{display:flex;gap:20px;margin:20px 0;flex-wrap:wrap;justify-content:center}
+.feedback-area{min-height:100px;display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;position:relative}
+.feedback-item{display:flex;align-items:center;gap:12px;padding:15px 25px;border-radius:var(--radius-md);font-size:1.2rem;font-weight:600;animation:feedbackPop 0.5s ease}
+@keyframes feedbackPop{0%{transform:scale(0);opacity:0}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.feedback-success{background:linear-gradient(135deg,var(--success-light),var(--success));color:white;box-shadow:var(--shadow-glow-success)}
+.feedback-error{background:linear-gradient(135deg,var(--error-light),var(--error));color:white;box-shadow:var(--shadow-md)}
+.complete-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 20px}
+.complete-title{font-size:2.5rem;color:var(--primary);margin-bottom:15px;text-shadow:2px 2px 4px rgba(0,0,0,0.1)}
+.complete-message{font-size:1.3rem;color:var(--text-secondary);margin-bottom:20px}
+.complete-stats{display:flex;gap:30px;margin-bottom:30px;flex-wrap:wrap;justify-content:center}
+.stat-item{display:flex;flex-direction:column;align-items:center;background:var(--bg-card);padding:20px 25px;border-radius:var(--radius-md);box-shadow:var(--shadow-md);min-width:100px}
+.stat-value{font-size:2rem;font-weight:700;color:var(--primary)}.stat-label{font-size:0.9rem;color:var(--text-secondary);margin-top:5px}
+.xp-earned{background:linear-gradient(135deg,var(--xp-gold),#FFB347);color:var(--text-primary);padding:15px 30px;border-radius:var(--radius-lg);font-size:1.3rem;font-weight:700;margin-bottom:25px;box-shadow:var(--shadow-md),0 0 20px rgba(255,217,61,0.4);animation:xp-earned-pulse 1s ease infinite}
+@keyframes xp-earned-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;overflow:hidden}
+.confetti{position:absolute;width:10px;height:10px;top:-10px;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,249,230,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
+.loading-overlay.active{display:flex}
+.loading-spinner{width:60px;height:60px;border:5px solid var(--bg-card);border-top-color:var(--primary);border-radius:var(--radius-full);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{margin-top:20px;font-size:1.2rem;color:var(--text-secondary);animation:pulse 1.5s ease infinite}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text-primary);color:white;padding:15px 30px;border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;font-size:1rem;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;transition:all var(--transition-normal);z-index:1001}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.review-card{min-width:320px}
+@media(max-width:480px){.app-title{font-size:1.8rem}.character-img{width:160px;height:160px}.word-english{font-size:2.2rem}.word-card{padding:20px 30px;min-width:auto;width:100%}.btn-large{padding:15px 40px;font-size:1.1rem}.action-buttons{flex-direction:column;width:100%}.btn-audio,.btn-record,.btn-story{width:100%}.complete-stats{flex-direction:column;gap:20px}.page{padding-top:65px}}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background-image:radial-gradient(2px 2px at 20px 30px,#FFE066,transparent),radial-gradient(2px 2px at 40px 70px,#FF9F43,transparent),radial-gradient(2px 2px at 160px 120px,#FFE066,transparent);background-size:350px 200px;animation:twinkle 4s linear infinite;pointer-events:none;z-index:-1;opacity:0.5}
+@keyframes twinkle{0%,100%{opacity:0.5}50%{opacity:0.8}}
+    </style>
+</head>
+<body>
+<div id="app">
+<div class="top-status-bar">
+<div class="xp-display"><span class="xp-value" id="total-xp">0 XP</span></div>
+<div class="level-badge" id="level-badge">Lv.1</div>
+<div class="streak-display"><span class="streak-icon">*</span><span id="streak-count">0</span></div>
+</div>
+
+<div id="home-page" class="page active">
+<div class="home-content">
+<div class="streak-banner" id="streak-banner" style="display:none">
+<span class="streak-fire">*</span>
+<span>连胜</span><span class="streak-days" id="streak-days">1</span><span>天</span>
+</div>
+<div class="character-container">
+<img src="../角色设计/小卡拉_开心打招呼.jpg" class="character-img character-idle" id="home-character">
+</div>
+<h1 class="app-title">小卡拉趣味记单词</h1>
+<p class="app-slogan">卡拉卡拉，故事来啦！</p>
+<div class="level-progress-container">
+<div class="level-progress-label">
+<span id="current-level-text">Lv.1</span><span id="next-level-text">Lv.2</span>
+</div>
+<div class="level-progress-bar">
+<div class="level-progress-fill" id="level-progress-fill" style="width:0%"></div>
+</div>
+</div>
+<button class="btn btn-primary btn-large" id="start-btn">开始学习</button>
+<button class="btn btn-secondary btn-small" id="review-btn">复习已学单词</button>
+</div>
+</div>
+
+<div id="learn-page" class="page">
+<div class="learn-header">
+<button class="btn btn-back" id="back-btn">返回</button>
+<div class="level-indicator"><span id="level-indicator-text">第1关 / 共15关</span></div>
+<div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+<span class="progress-label" id="progress-label">1/10</span>
+</div>
+<div class="learn-content">
+<div class="character-container learn-character" id="learn-character-container">
+<img src="../角色设计/小卡拉_认真思考.jpg" class="character-img" id="learn-character">
+</div>
+<div class="word-card" id="word-card">
+<div class="word-english" id="word-english">apple</div>
+<div class="word-chinese" id="word-chinese">苹果</div>
+</div>
+<div class="story-box">
+<div class="story-header">
+<div class="story-header-left"><span class="story-title">卡拉的故事</span></div>
+<button class="btn btn-story-listen" id="story-btn"><span id="story-btn-text">听故事</span></button>
+</div>
+<div class="story-content" id="story-content">小卡拉今天在果园里...</div>
+</div>
+<div class="action-buttons">
+<button class="btn btn-audio" id="play-sound-btn">听发音</button>
+<button class="btn btn-record" id="record-btn"><span id="record-text">跟读录音</span></button>
+</div>
+<div class="feedback-area" id="feedback-area"></div>
+</div>
+<div class="stars-container" id="stars-container"></div>
+</div>
+
+<div id="review-page" class="page">
+<div class="learn-header">
+<button class="btn btn-back" id="review-back-btn">返回</button>
+<div class="level-indicator"><span id="review-level-indicator-text">复习模式</span></div>
+<div class="progress-bar"><div class="progress-fill" id="review-progress-fill"></div></div>
+<span class="progress-label" id="review-progress-label">1/5</span>
+</div>
+<div class="learn-content">
+<div class="character-container learn-character" id="review-character-container">
+<img src="../角色设计/小卡拉_调皮鬼脸.jpg" class="character-img" id="review-character">
+</div>
+<div class="word-card review-card" id="review-word-card">
+<div class="word-english" id="review-word-english">apple</div>
+<div class="word-chinese" id="review-word-chinese">苹果</div>
+</div>
+<div class="story-box">
+<div class="story-header">
+<div class="story-header-left"><span class="story-title">卡拉的故事</span></div>
+<button class="btn btn-story-listen" id="review-story-btn"><span id="review-story-btn-text">听故事</span></button>
+</div>
+<div class="story-content" id="review-story-content">小卡拉今天学了一个新单词...</div>
+</div>
+<div class="action-buttons">
+<button class="btn btn-audio" id="review-play-btn">听发音</button>
+<button class="btn btn-record" id="review-record-btn"><span id="review-record-text">跟读录音</span></button>
+</div>
+<div class="feedback-area" id="review-feedback-area"></div>
+</div>
+<div class="stars-container" id="review-stars-container"></div>
+</div>
+
+<div id="complete-page" class="page">
+<div class="complete-content">
+<div class="character-container">
+<img src="../角色设计/小卡拉_得意欢呼.jpg" class="character-img bounce" id="complete-character">
+</div>
+<h1 class="complete-title" id="complete-title">太棒啦</h1>
+<p class="complete-message" id="complete-message">你已经完成了本次学习</p>
+<div class="xp-earned" id="xp-earned"><span>+0 XP</span></div>
+<div class="complete-stats">
+<div class="stat-item"><span class="stat-value" id="stat-correct">0</span><span class="stat-label">答对</span></div>
+<div class="stat-item"><span class="stat-value" id="stat-learned">0</span><span class="stat-label">已学单词</span></div>
+<div class="stat-item"><span class="stat-value" id="stat-level">Lv.1</span><span class="stat-label">当前等级</span></div>
+</div>
+<button class="btn btn-primary btn-large" id="continue-btn">继续学习</button>
+<button class="btn btn-secondary btn-small" id="home-btn">返回首页</button>
+</div>
+<div class="confetti-container" id="confetti-container"></div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay"><div class="loading-spinner"></div><p class="loading-text">小卡拉在准备...</p></div>
+<div class="toast" id="toast"><span class="toast-message"></span></div>
+</div>
+
+<script>
+var WORD_DATA={"books":[{"semester":"上册","units":[{"unit":1,"words":[{"word":"one","translation":"一"},{"word":"two","translation":"二"},{"word":"three","translation":"三"},{"word":"four","translation":"四"},{"word":"five","translation":"五"},{"word":"six","translation":"六"},{"word":"seven","translation":"七"},{"word":"eight","translation":"八"},{"word":"nine","translation":"九"},{"word":"ten","translation":"十"},{"word":"book","translation":"书"},{"word":"bag","translation":"书包"},{"word":"pen","translation":"钢笔"},{"word":"pencil","translation":"铅笔"},{"word":"ruler","translation":"尺子"},{"word":"school","translation":"学校"}]},{"unit":2,"words":[{"word":"red","translation":"红色"},{"word":"blue","translation":"蓝色"},{"word":"green","translation":"绿色"},{"word":"yellow","translation":"黄色"},{"word":"orange","translation":"橙色"},{"word":"white","translation":"白色"},{"word":"apple","translation":"苹果"},{"word":"cat","translation":"猫"},{"word":"dog","translation":"狗"},{"word":"bird","translation":"鸟"},{"word":"fish","translation":"鱼"},{"word":"rabbit","translation":"兔子"}]},{"unit":3,"words":[{"word":"bed","translation":"床"},{"word":"desk","translation":"书桌"},{"word":"chair","translation":"椅子"},{"word":"window","translation":"窗户"},{"word":"door","translation":"门"},{"word":"floor","translation":"地面"},{"word":"table","translation":"桌子"}]},{"unit":4,"words":[{"word":"happy","translation":"高兴的"},{"word":"sad","translation":"难过的"},{"word":"angry","translation":"生气的"},{"word":"hungry","translation":"饿的"},{"word":"tired","translation":"疲劳的"},{"word":"sick","translation":"生病的"}]},{"unit":5,"words":[{"word":"toy","translation":"玩具"},{"word":"car","translation":"小汽车"},{"word":"ball","translation":"球"},{"word":"doll","translation":"玩偶"},{"word":"plane","translation":"飞机"},{"word":"kite","translation":"风筝"},{"word":"bear","translation":"熊"},{"word":"bus","translation":"公共汽车"},{"word":"bike","translation":"自行车"}]}]},{"semester":"下册","units":[{"unit":1,"words":[{"word":"coat","translation":"外套"},{"word":"hat","translation":"帽子"},{"word":"shoe","translation":"鞋子"},{"word":"sock","translation":"袜子"},{"word":"skirt","translation":"裙子"},{"word":"dress","translation":"连衣裙"}]},{"unit":2,"words":[{"word":"run","translation":"跑"},{"word":"jump","translation":"跳"},{"word":"swim","translation":"游泳"},{"word":"fly","translation":"飞"},{"word":"climb","translation":"爬"},{"word":"stop","translation":"停"},{"word":"go","translation":"走"}]},{"unit":3,"words":[{"word":"draw","translation":"画"},{"word":"sing","translation":"唱歌"},{"word":"dance","translation":"跳舞"},{"word":"write","translation":"写字"},{"word":"read","translation":"阅读"},{"word":"count","translation":"数数"}]},{"unit":4,"words":[{"word":"park","translation":"公园"},{"word":"tree","translation":"树"},{"word":"flower","translation":"花"},{"word":"lake","translation":"湖"},{"word":"head","translation":"头"},{"word":"hand","translation":"手"},{"word":"foot","translation":"脚"},{"word":"arm","translation":"手臂"},{"word":"leg","translation":"腿"},{"word":"game","translation":"游戏"}]}]}]};
+
+var STORIES={
+one:"铁头有一支铅笔，他骄傲地说：这是我one，one是最好的铅笔。米小圈说：one就one支有什么好炫耀的。铁头不服气，非要让米小圈承认他only one的铅笔最漂亮。one就是一，one支铅笔是one，你会说one了吗？",
+two:"米小圈的铁头好兄弟，铁头脑袋特别大，大家都叫他铁头。铁头有two个优点：一是头很铁，二是作业总不会。铁头说：two是我的幸运数字。米小圈笑话他：two就是two，你连two加two等于几都不知道。two就是二，two是个简单的数字，记住two。",
+three:"米小圈、铁头、姜小牙three个人是好朋友。他们 three 个人成立了铁三角小组。铁头说：three个人力量大。姜小牙说：three个人一起罚站也不孤单。米小圈觉得three个人一起做坏事最开心。three就是三，three个好伙伴是 three，记住three。",
+four:"米小圈英语考了four分，妈妈气得跳起来。铁头安慰他：four分也很厉害了，我考four分都考不到。米小圈哭了：four分怎么厉害了。铁头说：four就是four，我的 four 分比你少。four就是四，four分是four，four看起来很简单。",
+five:"米小圈有five个小玩具，他最喜欢那个机器人。铁头有five支铅笔，但没有一支能用的。姜小牙说：five支铅笔都是断了的。铁头说：five就是我的幸运数字。five就是五，five个玩具是five，数数看：one two three four five。",
+six:"铁头的数学考了six分，他高兴得手舞足蹈。姜小牙问：six分有什么好高兴的。铁头说：six比four多two呢。米小圈说：six分都能高兴成这样，我真是服了你了。six就是六，six分是six，six比four大two。",
+seven:"米小圈的铁头说，他有seven个脑袋，虽然只有one个是真的。姜小牙说：seven个脑袋，你怎么只说了一个。铁头挠挠头：其他的seven个优点，我想不起来了。seven就是七，seven个优点是seven，忘记七个是seven。",
+eight:"姜小牙家有eight只小狗，全都胖得像小猪。姜小牙说：我的eight只狗，每只都比铁头的脑袋大。铁头不服气：我的头比不过狗头，但比你的聪明。eight就是八，eight只狗是eight，数数eight个小动物。",
+nine:"米小圈的铁头说，他有nine个脑袋，虽然只有one个是真的。姜小牙说：nine个脑袋，怪不得你一个都记不住作业。铁头委屈地说：nine个脑袋都记不住nine个生字，太难了。nine就是九，nine比ten少one，nine是数字九。",
+ten:"米小圈的铁头说，ten是他的目标分数。姜小牙问：ten分很好考吗。铁头说：ten分我已经考过很多次了。米小圈问：什么时候。铁头说：每次考试我都向 ten 分努力，虽然从没达到过。ten就是十，ten是数字中很特别的one，记住 ten。",
+book:"米小圈最讨厌book，因为book里有看不完的作业。铁头最讨厌book，因为铁头看不懂book。姜小牙说：你们讨厌book，book也很讨厌你们。铁头说：book里全是字，看得头晕。book就是书，book里有知识，记住 book。",
+bag:"米小圈有个新bag，同学们都说像麻袋。铁头说：麻袋好，能装很多东西。姜小牙说：你那个bag，装的都是零食和玩具。米小圈说：这个bag可是名牌呢。bag就是书包，bag里要装book，记住bag。",
+pen:"米小圈的铁头，用pen写字像画符。姜小牙说：你这pen字，是火星文吗。铁头说：我这是艺术pen字。老师看了直摇头。pen就是钢笔，pen可以写很多字，记住pen。",
+pencil:"铁头有支pencil，短的只剩一小截了。姜小牙说：你的pencil比我的手指头还短。铁头说：这叫迷你的pencil。米小圈说：你的pencil该换了。pencil就是铅笔，pencil比pen短，记住pencil。",
+ruler:"米小圈的铁头，用ruler量长度，量出来都是很长和很短两种。姜小牙说：你的ruler是装饰品吗。铁头说：我的ruler可准了，一量就知道很长。ruler就是尺子，ruler可以量东西，记住ruler。",
+school:"米小圈最不喜欢school，因为school有做不完的作业。但米小圈喜欢school，因为school有铁头和姜小牙。铁头说：我也不喜欢school，但有你们就不无聊了。school就是学校，school是我们的第二个家。",
+red:"米小圈穿了一件red色的T恤去学校，同学们都说太丑了。铁头说：red色像番茄一样。姜小牙说：red色像红领巾一样。米小圈说：red色明明很好看，是你们不懂欣赏。red就是红色，red是很鲜艳的颜色，红领巾是red的。",
+blue:"米小圈的同桌穿了一条blue色的裙子，米小圈说像窗帘。铁头说：blue色像天空。姜小牙说：blue色像大海。米小圈说：反正都不像blue的裙子。blue就是蓝色，天空是blue的，大海也是blue的。",
+green:"米小圈家的草地是green的，他最喜欢在green草地上踢球。铁头家的草地是green的，但全被他踩秃了。姜小牙说：铁头，你家green草地变成棕色草地了。green就是绿色，green草地很美丽，记住 green。",
+yellow:"米小圈的铁头有件yellow色的外套，穿上像向日葵。姜小牙笑话他：铁头，你像个yellow大灯泡。铁头不服气：yellow向日葵很漂亮。米小圈说：yellow灯泡也很亮。yellow就是黄色，向日葵是yellow的，记住yellow。",
+orange:"铁头最喜欢orange橙子的味道，因为吃了就不会变笨。姜小牙说：你已经很笨了，吃多少orange都没用。铁头说：那我更要吃orange了。orange就是橙色，orange橙子是orange的，酸酸甜甜是orange。",
+white:"米小圈的铁头，穿上white色的校服看起来更像傻了。姜小牙说：white校服配铁头脑袋，绝配。铁头说：white看起来很干净。米小圈说：你那脑子才需要洗干净。white就是白色，云朵是white的。",
+apple:"米小圈妈妈买了一个红红的apple，米小圈一口咬下去，甜甜的。铁头说：apple是好东西，我一口气能吃五个apple。米小圈说：你那叫吃，叫吞。apple就是苹果，红红的apple甜甜的，记住apple。",
+cat:"米小圈楼下有只cat，每天见到米小圈就蹭蹭腿。这只cat特别懒，白天睡觉晚上闹。米小圈给它起名叫小胖cat，和铁头一样能吃能睡。cat就是猫，cat会喵喵叫，记住cat。",
+dog:"米小圈的铁头，名字叫铁头，脑袋像dog一样大。铁头说：dog是人类的好朋友，我也是人类的好朋友。姜小牙说：你是dog的好朋友，但不是人的。dog就是狗，dog会汪汪叫，记住dog。",
+bird:"教室窗户外面飞来一只bird，米小圈和铁头盯着看。姜小牙说：看什么看，又不是你们的bird。铁头说：这只bird比我家的鸟还丑。bird就是鸟，bird会飞，记住bird这个单词。",
+fish:"米小圈家有只金鱼fish，铁头说：你家的fish太懒了，只会游来游去。姜小牙说：fish不游来游去，难道要跑来跑去。铁头想了想：也是，fish只会swim嘛。fish就是鱼，fish在水里swim，记住fish。",
+rabbit:"铁头最怕rabbit，因为兔子脑袋也很大。姜小牙说：你怕rabbit是因为你们是亲戚。铁头说：才不是，rabbit跑得太快了，我追不上。rabbit就是兔子，rabbit跳得很高，记住rabbit。",
+bear:"米小圈说铁头像只bear，圆滚滚的。铁头说：bear很强壮。姜小牙说：你是bear，但不是强壮的bear，是懒bear。bear就是熊，bear很大很可爱，记住bear。",
+bed:"米小圈的铁头，在bed上蹦跳被妈妈骂。铁头说：我的bed是我的蹦床。妈妈说：你的bed是睡觉用的，不是蹦床。bed就是床，bed上要睡觉，记住 bed。",
+desk:"米小圈的desk上堆满了玩具和零食。铁头说：你的desk比我的脑袋还乱。姜小牙说：你那desk根本没地方写字。desk就是书桌，desk上要放book，记住desk。",
+chair:"铁头坐在chair上摇来摇去，差点摔倒。姜小牙说：你的chair都要被你摇散架了。铁头说：这叫自由摇椅。chair就是椅子，chair是用来坐的，记住chair。",
+window:"米小圈透过window看外面的风景，被老师发现了。老师说：上课不要看window。铁头说：window外面有什么好看的。window就是窗户，window让房间变亮，记住window。",
+door:"铁头推门太大，把door撞得咚咚响。姜小牙说：你的door要被你撞坏了。铁头说：这个door不结实。door就是门，进门要轻轻推door，记住door。",
+table:"米小圈的铁头，趴在table上写作业，差点睡着了。姜小牙说：你的table都要被你趴塌了。铁头说：我的table很结实。table就是桌子，table上可以放东西，记住table。",
+floor:"铁头不小心把水洒在floor上，被罚擦地。姜小牙说：谁让你把floor弄湿的。铁头说：floor也需要洗洗澡嘛。floor就是地板，floor要保持干净，记住floor。",
+happy:"米小圈今天被老师表扬了，他very happy。铁头问：什么事情让你这么happy。米小圈说：老师说我比铁头聪明一点点。铁头说：这有什么好happy的。happy就是高兴的，happy是最棒的感觉。",
+sad:"米小圈的玩具被弄坏了，他很sad。铁头说：sad什么，我作业丢了都没sad。姜小牙说：那是因为你根本不在乎作业。sad就是难过的，但sad会过去的。",
+angry:"米小圈的铁头，因为作业没写完被老师骂，他很angry。铁头回到家更angry，把玩具摔了一地。妈妈说：angry也不能摔东西。angry就是生气的，angry对身体不好。",
+hungry:"米小圈上课肚子叫了一声，他说Im hungry。老师问：什么。铁头帮米小圈翻译：他说他hungry。老师让他下课去吃东西。hungry就是饿的，hungry的时候肚子会叫。",
+tired:"铁头说今天体育课跑了 ten 圈，他累得tired。姜小牙说：你才跑 three 圈就喊tired。铁头说：对于我这个tired鬼来说，three圈也很累。tired就是疲劳的，累了就要休息。",
+sick:"米小圈的铁头生病了，他很sick。姜小牙说：让你乱吃东西，现在sick了吧。铁头说：sick也不怕，铁头身体棒。妈妈说：sick了就要吃药，不能逞强。sick就是生病的，sick了要好好休息。",
+toy:"米小圈的铁头，带了个新toy来学校。老师说不能带toy来。铁头说：这个toy是益智的，可以开发智力。老师说：益智也要下课玩。toy就是玩具，但学校不是玩toy的地方。",
+car:"铁头画了一辆car，他说这是铁头号飞car。姜小牙说：你这个car连轮子都没有。铁头说：这是未来car，会飞的。米小圈说：你还是先画四个轮子吧。car就是小汽车，car可以在路上跑。",
+ball:"米小圈的铁头，体育课玩ball把球踢到老师头上。姜小牙说：你的ball瞄准技术真好。铁头说：我不小心的。米小圈说：你是故意的吧。ball就是球，ball可以踢可以拍。",
+doll:"铁头带了个doll来学校，被同学们笑话。姜小牙说：铁头，你怎么带doll。铁头说：这是我妹妹的，我只是帮忙拿。doll就是玩偶，doll是可爱的。",
+plane:"米小圈折了架纸plane，他说能飞很远。铁头说：我扔的plane比你折的飞得更远。结果铁头的plane直接掉地上了。plane就是飞机，plane可以飞上天空。",
+kite:"春天到了，米小圈和铁头去放kite。铁头的kite老是掉下来，米小圈的kite飞得很高。铁头说：你的kite比我的好。kite就是风筝，春天最适合放kite。",
+bus:"米小圈坐bus去春游，铁头晕bus吐了一路。姜小牙说：你以后别坐bus了，走路去吧。铁头说：走路更远，会累死。bus就是公共汽车，bus可以带我们去很多地方。",
+bike:"铁头学骑bike，摔了好几跤。姜小牙说：你的bike技术太差了。铁头说：这是我和bike在磨合。bike就是自行车，bike有两个轮子。",
+coat:"天冷了，米小圈的铁头穿上新coat出门。铁头说：我的coat很暖和。姜小牙说：你的coat像麻袋。coat就是外套，天冷要穿coat。",
+hat:"铁头戴了个hat，说是时尚新款。姜小牙说：你的hat像剩菜篮子。铁头说：这是创意hat。hat就是帽子，hat可以遮太阳。",
+shoe:"铁头的shoe很臭，但他坚持说很香。姜小牙说：你的shoe可以把人熏晕。铁头说：那是我shoe的特色。shoe就是鞋子，shoe穿在脚上。",
+sock:"米小圈的铁头，袜子穿反了还不知道。姜小牙说：你的sock穿反了。铁头说：反的sock更舒服。sock就是袜子，sock穿在shoe里面。",
+skirt:"铁头说他表妹的skirt很漂亮。姜小牙说：你不适合穿skirt。铁头说：我当然知道。skirt就是裙子，skirt是女孩子的衣服。",
+dress:"学校表演节目，铁头要穿dress。他哭着说不要穿dress。姜小牙说：dress很漂亮的。铁头说：我是男生，不能穿dress。dress就是连衣裙，dress是特别的衣服。",
+run:"体育课比赛run，米小圈跑得最快。铁头跑得最慢，还摔了一跤。姜小牙说：铁头，你怎么run的。铁头说：我run得很有特色。run就是跑，run可以锻炼身体。",
+jump:"铁头跳远jump，只跳了一点点。姜小牙说：你jump得像青蛙。铁头说：青蛙jump得很远，我比不上。jump就是跳，jump可以跳得很高。",
+swim:"暑假铁头学swim，喝了一肚子水。姜小牙说：你是来swim还是来喝水的。铁头说：我在练习水中呼吸。swim就是游泳，swim要在水里进行。",
+fly:"米小圈做梦梦见自己能fly，飞得比飞机还高。醒来发现自己在bed上。铁头说：我梦见fly，但我飞不起来。fly就是飞，bird可以fly。",
+climb:"铁头体育课climb绳索，像条虫子一样往上爬。姜小牙说：你是climb还是在扭秧歌。铁头说：这是我独创的climb方法。climb就是爬，climb要用手和脚。",
+stop:"老师喊stop，铁头还在跑。姜小牙说：老师喊stop，你怎么不停。铁头说：我太投入了，忘了stop。stop就是停，听到stop就要停下来。",
+go:"下课铃响了，老师说：同学们可以go了。铁头第一个冲出教室。姜小牙说：你跑那么快干嘛。铁头说：我急着go厕所。go就是走，可以go很多地方。",
+draw:"美术课铁头draw了一幅画，老师问：你draw的是什么。铁头说：我draw的是一头猪。老师无语了。draw就是画，draw可以把东西留下来。",
+sing:"音乐课铁头sing歌，全班都捂耳朵。姜小牙说：你是sing歌还是sing噪音。铁头说：我这叫独特的sing风格。sing就是唱歌，sing可以表达心情。",
+dance:"六一儿童节铁头dance，舞步乱七八糟。姜小牙说：你是dance还是在打拳。铁头说：这叫铁头独创dance。dance就是跳舞，dance要有节奏。",
+write:"铁头write作业，字写得谁都不认识。姜小牙说：你write的是什么。铁头说：这是火星文write。老师看了直摇头。write就是写字，write要写清楚。",
+read:"阅读课铁头read课文，读得磕磕巴巴。姜小牙说：你是read还是在数拍子。铁头说：我这是有感情的read。read就是阅读，read可以学到知识。",
+count:"数学课铁头count，手指头不够用。姜小牙说：你怎么还在count手指头。铁头说：我的手指头 two不够用啊。count就是数数，count要用脑子。",
+park:"春天去park春游，铁头在park里追蝴蝶。姜小牙说：你来park是春游还是抓虫子。铁头说：观察大自然嘛。park就是公园，park里有tree和flower。",
+tree:"公园里有棵大tree，铁头非要爬上去。姜小牙说：你不怕从tree上摔下来。铁头说：我皮糙肉厚，摔不坏。tree就是树，tree很高很大。",
+flower:"公园里的flower开了，铁头摘了一朵。老师说不能摘flower。铁头说：我是想让妈妈看看beautiful的flower。flower就是花，flower不能随便摘。",
+lake:"公园里有个lake，铁头往里面扔石子。姜小牙说：你在lake里找什么。铁头说：我在喂鱼。lake就是湖，lake里有fish。",
+head:"铁头的head特别大，同学们都叫他大头儿子。姜小牙说：你的head里装的是什么。铁头说：装的都是智慧。head就是头，head是我们思考的地方。",
+hand:"铁头的hand写了检讨书，保证不捣蛋。第二天他的手又开始捣蛋了。妈妈说：你的hand写检讨书，hand又忘了吗。hand就是手，hand可以做很多事情。",
+foot:"铁头的foot踢到了桌子，疼得哇哇叫。姜小牙说：谁让你用foot踢桌子。铁头说：桌子挡路。foot就是脚，foot要注意保护。",
+arm:"铁头张开arm抱住大树，说要测量树的粗细。姜小牙说：你的arm够长吗。铁头说：差一点点。arm就是手臂，arm可以拥抱。",
+leg:"铁头的leg跑步抽筋了。姜小牙说：平时不运动，腿不行吧。铁头说：我的leg需要热身。leg就是腿，leg让我们能跑能跳。",
+game:"下课了，铁头组织同学们玩game。姜小牙说：什么game。铁头说：猜谜game，猜错的人要学狗叫。game就是游戏，大家一起玩游戏最开心。",
+default:"米小圈今天学了一个新单词，他觉得好有趣。原来学习也可以这么开心。铁头说：我也要好好学。姜小牙说：你说了很多遍了。米小圈和好朋友们，一起加油记单词。"
+};
+
+var XP_PER_CORRECT=10,XP_PER_LEVEL=100;
+var gameState={totalXP:0,currentLevel:1,streakDays:0,lastPlayDate:null,learnedWords:[],wordList:[],currentWords:[],currentIndex:0,reviewWords:[],reviewIndex:0,sessionXP:0,sessionCorrect:0,isReviewMode:false,isSpeaking:false,currentLevelIndex:1,totalLevels:15,mediaRecorder:null,audioChunks:[],isRecording:false};
+var MESSAGES={correct:["太棒了","你真厉害","完美","太酷了","继续保持","答对啦","厉害","太聪明了"],wrong:["没关系再试试","加油","你可以的","别灰心"],complete:["你今天太厉害了","学习小能手","继续保持连胜","太棒了继续加油"]};
+var CHARACTERS={greeting:"../角色设计/小卡拉_开心打招呼.jpg",think:"../角色设计/小卡拉_认真思考.jpg",happy:"../角色设计/小卡拉_得意欢呼.jpg",funny:"../角色设计/小卡拉_调皮鬼脸.jpg"};
+
+function SoundManager(){this.audioContext=null;this.initialized=false}
+SoundManager.prototype.init=function(){if(this.initialized)return;try{this.audioContext=new(window.AudioContext||window.webkitAudioContext)}catch(e){}};
+SoundManager.prototype.playCorrect=function(){this.init();if(!this.audioContext)return;var ctx=this.audioContext;var osc=ctx.createOscillator();var gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.setValueAtTime(880,ctx.currentTime);osc.frequency.setValueAtTime(1108.73,ctx.currentTime+0.1);osc.frequency.setValueAtTime(1318.51,ctx.currentTime+0.2);gain.gain.setValueAtTime(0.3,ctx.currentTime);gain.gain.linearRampToValueAtTime(0.01,ctx.currentTime+0.3);osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3)};
+SoundManager.prototype.playWrong=function(){this.init();if(!this.audioContext)return;var ctx=this.audioContext;var osc=ctx.createOscillator();var gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type="sawtooth";osc.frequency.setValueAtTime(200,ctx.currentTime);osc.frequency.linearRampToValueAtTime(150,ctx.currentTime+0.2);gain.gain.setValueAtTime(0.2,ctx.currentTime);gain.gain.linearRampToValueAtTime(0.01,ctx.currentTime+0.3);osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3)};
+SoundManager.prototype.playComplete=function(){this.init();if(!this.audioContext)return;var ctx=this.audioContext;var notes=[523.25,659.25,783.99,1046.50];notes.forEach(function(f,i){var osc=ctx.createOscillator();var gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.setValueAtTime(f,ctx.currentTime+i*0.15);gain.gain.setValueAtTime(0,ctx.currentTime+i*0.15);gain.gain.linearRampToValueAtTime(0.2,ctx.currentTime+i*0.15+0.05);gain.gain.linearRampToValueAtTime(0.01,ctx.currentTime+i*0.15+0.3);osc.start(ctx.currentTime+i*0.15);osc.stop(ctx.currentTime+i*0.15+0.3)})};
+var soundManager=new SoundManager();
+
+function loadGameState(){var saved=localStorage.getItem("kala_game_state");if(saved){var data=JSON.parse(saved);gameState.totalXP=data.totalXP||0;gameState.currentLevel=data.currentLevel||1;gameState.streakDays=data.streakDays||0;gameState.lastPlayDate=data.lastPlayDate;gameState.learnedWords=data.learnedWords||[];gameState.currentLevelIndex=data.currentLevelIndex||1;gameState.totalLevels=data.totalLevels||15;checkStreak()}updateUI()}
+function saveGameState(){localStorage.setItem("kala_game_state",JSON.stringify({totalXP:gameState.totalXP,currentLevel:gameState.currentLevel,streakDays:gameState.streakDays,lastPlayDate:gameState.lastPlayDate,learnedWords:gameState.learnedWords,currentLevelIndex:gameState.currentLevelIndex,totalLevels:gameState.totalLevels}))}
+function checkStreak(){var today=new Date().toDateString();var lastDate=gameState.lastPlayDate?new Date(gameState.lastPlayDate).toDateString():null;if(lastDate){var yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);if(lastDate===today){}else if(lastDate===yesterday.toDateString()){gameState.streakDays++}else{gameState.streakDays=1}}else{gameState.streakDays=1}gameState.lastPlayDate=today}
+function addXP(amount){gameState.totalXP+=amount;gameState.sessionXP+=amount;gameState.currentLevel=Math.floor(gameState.totalXP/XP_PER_LEVEL)+1;updateUI();saveGameState()}
+function updateUI(){document.getElementById("total-xp").textContent=gameState.totalXP+" XP";document.getElementById("level-badge").textContent="Lv."+gameState.currentLevel;document.getElementById("current-level-text").textContent="Lv."+gameState.currentLevel;document.getElementById("next-level-text").textContent="Lv."+(gameState.currentLevel+1);document.getElementById("stat-level").textContent="Lv."+gameState.currentLevel;document.getElementById("level-progress-fill").style.width=(gameState.totalXP%XP_PER_LEVEL)/XP_PER_LEVEL*100+"%";document.getElementById("streak-count").textContent=gameState.streakDays;document.getElementById("streak-days").textContent=gameState.streakDays;document.getElementById("streak-banner").style.display=gameState.streakDays>0?"flex":"none";document.getElementById("learned-count").textContent=gameState.learnedWords.length}
+
+function createStarEffect(containerId){var container=document.getElementById(containerId);var icons=["*","+","o","^"];for(var i=0;i<8;i++){setTimeout(function(i){var star=document.createElement("span");star.className="star";star.textContent=icons[Math.floor(Math.random()*icons.length)];var sx=window.innerWidth/2,sy=window.innerHeight/2;var angle=Math.PI*2*i/8+Math.random()*0.5,dist=100+Math.random()*100;star.style.left=sx+"px";star.style.top=sy+"px";star.style.setProperty("--tx",Math.cos(angle)*dist+"px");star.style.setProperty("--ty",Math.sin(angle)*dist+"px");container.appendChild(star);setTimeout(function(){star.remove()},1000)},i*50,i)}}
+function createConfetti(){var container=document.getElementById("confetti-container");var colors=["#FF6B6B","#4ECDC4","#FFD93D","#6BCB77","#4D96FF"];for(var i=0;i<50;i++){setTimeout(function(i){var c=document.createElement("div");c.className="confetti";c.style.left=Math.random()*100+"%";c.style.backgroundColor=colors[Math.floor(Math.random()*colors.length)];c.style.width=(8+Math.random()*8)+"px";c.style.height=(8+Math.random()*8)+"px";c.style.borderRadius=Math.random()>0.5?"50%":"0";c.style.animationDuration=(2+Math.random()*2)+"s";container.appendChild(c);setTimeout(function(){c.remove()},4000)},i*30,i)}}
+function setCharacterAnimation(containerId,type){var c=document.getElementById(containerId);c.className="character-container learn-character";if(type==="celebrate")c.classList.add("character-celebrate");if(type==="think")c.classList.add("character-think");if(type==="idle")c.classList.add("character-idle")}
+function showToast(msg,type){var t=document.getElementById("toast");t.querySelector(".toast-message").textContent=msg;t.className="toast show "+(type||"success");setTimeout(function(){t.classList.remove("show")},2500)}
+function showLoading(text){var o=document.getElementById("loading-overlay");o.querySelector(".loading-text").textContent=text||"小卡拉在准备...";o.classList.add("active")}
+function hideLoading(){document.getElementById("loading-overlay").classList.remove("active")}
+function switchPage(pageId){document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});document.getElementById(pageId).classList.add("active")}
+function getStory(word){var key=word.toLowerCase().replace(/[^a-z]/g,"");return STORIES[key]||STORIES.default}
+function playTTS(text,lang){return new Promise(function(resolve){if("speechSynthesis" in window){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang=lang||"en-US";u.rate=1;u.pitch=1.1;u.onend=function(){resolve(true)};u.onerror=function(){resolve(false)};speechSynthesis.speak(u)}else{resolve(false)}})}
+function playStoryTTS(text){return new Promise(function(resolve){if("speechSynthesis" in window){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang="zh-CN";u.rate=1;u.pitch=1.1;u.onend=function(){resolve(true)};u.onerror=function(){resolve(false)};speechSynthesis.speak(u)}else{resolve(false)}})}
+function startSpeaking(img){if(img){img.classList.add("speaking");gameState.isSpeaking=true}}
+function stopSpeaking(img){if(img){img.classList.remove("speaking");gameState.isSpeaking=false}}
+function startASR(){return new Promise(function(resolve){if("webkitSpeechRecognition" in window||"SpeechRecognition" in window){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;var r=new SR();r.lang="en-US";r.continuous=false;r.interimResults=false;r.onresult=function(e){resolve(e.results[0][0].transcript.toLowerCase())};r.onerror=function(){resolve("")};r.start();setTimeout(function(){r.stop();setTimeout(function(){resolve("")},500)},8000)}else{resolve("")}})}
+
+async function startRecording(btn,textEl,iconEl){try{var stream=await navigator.mediaDevices.getUserMedia({audio:true});gameState.mediaRecorder=new MediaRecorder(stream);gameState.audioChunks=[];gameState.mediaRecorder.ondataavailable=function(e){gameState.audioChunks.push(e.data)};gameState.mediaRecorder.onstop=async function(){stream.getTracks().forEach(function(t){t.stop()});showLoading("正在识别...");var text=await startASR();hideLoading();checkResult(text,btn,textEl,iconEl)};gameState.mediaRecorder.start();gameState.isRecording=true;btn.classList.add("recording");textEl.textContent="正在录音...";iconEl.textContent="x";setTimeout(function(){if(gameState.isRecording)stopRecording(btn,textEl,iconEl)},10000)}catch(e){showToast("请允许使用麦克风","error")}}
+function stopRecording(btn,textEl,iconEl){if(gameState.mediaRecorder&&gameState.isRecording){gameState.mediaRecorder.stop();gameState.isRecording=false;btn.classList.remove("recording");textEl.textContent="跟读录音";iconEl.textContent="v"}}
+function levenshtein(a,b){var m=a.length,n=b.length;var dp=Array(m+1).fill().map(function(){return Array(n+1).fill(0)});for(var i=0;i<=m;i++)dp[i][0]=i;for(var j=0;j<=n;j++)dp[0][j]=j;for(var i=1;i<=m;i++)for(var j=1;j<=n;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1])+1;return dp[m][n]}
+function checkResult(text,btn,textEl,iconEl){var isReview=gameState.isReviewMode;var word=isReview?gameState.reviewWords[gameState.reviewIndex]:gameState.currentWords[gameState.currentIndex];var target=word.word.toLowerCase().replace(/[^a-z]/g,"");var correct=text.includes(target)||(text&&target&&levenshtein(text,target)<=2);var feedback=document.getElementById(isReview?"review-feedback-area":"feedback-area");var charContainer=document.getElementById(isReview?"review-character-container":"learn-character-container");var charImg=document.getElementById(isReview?"review-character":"learn-character");var wordCard=document.getElementById(isReview?"review-word-card":"word-card");var starsId=isReview?"review-stars-container":"stars-container";if(correct){gameState.sessionCorrect++;soundManager.playCorrect();if(!isReview&&!gameState.learnedWords.find(function(w){return w.word===word.word})){gameState.learnedWords.push(word);saveGameState();updateUI()}addXP(XP_PER_CORRECT);feedback.innerHTML='<div class="feedback-item feedback-success"><span>'+MESSAGES.correct[Math.floor(Math.random()*MESSAGES.correct.length)]+'</span></div>';charImg.src=CHARACTERS.happy;setCharacterAnimation(charContainer.id,"celebrate");wordCard.classList.add("correct");createStarEffect(starsId);showXPPopup(wordCard);setTimeout(function(){wordCard.classList.remove("correct");setTimeout(function(){isReview?nextReview():nextWord()},300)},1500)}else{soundManager.playWrong();feedback.innerHTML='<div class="feedback-item feedback-error"><span>'+MESSAGES.wrong[Math.floor(Math.random()*MESSAGES.wrong.length)]+'</span></div>';charImg.src=CHARACTERS.think;setCharacterAnimation(charContainer.id,"think");wordCard.classList.add("wrong");setTimeout(function(){wordCard.classList.remove("wrong")},500);showToast("没关系再试试","error")}}
+function showXPPopup(card){var popup=document.createElement("div");popup.className="xp-popup";popup.textContent="+"+XP_PER_CORRECT+" XP";card.appendChild(popup);setTimeout(function(){popup.remove()},1000)}
+function loadWords(){try{showLoading("小卡拉在加载词库...","");if(WORD_DATA&&WORD_DATA.books){gameState.wordList=[];WORD_DATA.books.forEach(function(book){book.units.forEach(function(unit){gameState.wordList.push.apply(gameState.wordList,unit.words)})});gameState.totalLevels=Math.ceil(gameState.wordList.length/10)}hideLoading();if(!gameState.wordList.length){gameState.wordList=[{word:"apple",translation:"苹果"},{word:"cat",translation:"猫"},{word:"dog",translation:"狗"},{word:"red",translation:"红色"},{word:"blue",translation:"蓝色"},{word:"one",translation:"一"},{word:"two",translation:"二"},{word:"happy",translation:"高兴的"},{word:"book",translation:"书"},{word:"ball",translation:"球"}]}}catch(e){hideLoading();gameState.wordList=[{word:"apple",translation:"苹果"}]}}
+function startLearning(){gameState.isReviewMode=false;gameState.currentIndex=0;gameState.sessionXP=0;gameState.sessionCorrect=0;gameState.currentWords=gameState.wordList.slice().sort(function(){return Math.random()-0.5}).slice(0,10);gameState.currentLevelIndex=Math.min(gameState.currentLevelIndex,gameState.totalLevels);document.getElementById("level-indicator-text").textContent="第"+gameState.currentLevelIndex+"关 / 共"+gameState.totalLevels+"关";switchPage("learn-page");updateLearnUI()}
+function startReview(){if(!gameState.learnedWords.length){showToast("还没有已学单词快去学习吧","error");return}gameState.isReviewMode=true;gameState.reviewIndex=0;gameState.sessionXP=0;gameState.sessionCorrect=0;gameState.reviewWords=gameState.learnedWords.slice().sort(function(){return Math.random()-0.5}).slice(0,5);switchPage("review-page");updateReviewUI()}
+function updateLearnUI(){if(gameState.currentIndex>=gameState.currentWords.length){return showComplete()}var w=gameState.currentWords[gameState.currentIndex];var charImg=document.getElementById("learn-character");var charContainer=document.getElementById("learn-character-container");var wordCard=document.getElementById("word-card");wordCard.classList.remove("word-card-enter");void wordCard.offsetWidth;wordCard.classList.add("word-card-enter");document.getElementById("word-english").textContent=w.word;document.getElementById("word-chinese").textContent=w.translation;document.getElementById("story-content").textContent=getStory(w.word);document.getElementById("progress-fill").style.width=((gameState.currentIndex+1)/gameState.currentWords.length)*100+"%";document.getElementById("progress-label").textContent=(gameState.currentIndex+1)+"/"+gameState.currentWords.length;document.getElementById("feedback-area").innerHTML="";charImg.src=CHARACTERS.think;setCharacterAnimation(charContainer.id,"idle");document.getElementById("story-btn").classList.remove("playing");document.getElementById("story-btn-text").textContent="听故事";stopSpeaking(charImg)}
+function updateReviewUI(){if(gameState.reviewIndex>=gameState.reviewWords.length){return showComplete()}var w=gameState.reviewWords[gameState.reviewIndex];var charImg=document.getElementById("review-character");var charContainer=document.getElementById("review-character-container");var wordCard=document.getElementById("review-word-card");wordCard.classList.remove("word-card-enter");void wordCard.offsetWidth;wordCard.classList.add("word-card-enter");document.getElementById("review-word-english").textContent=w.word;document.getElementById("review-word-chinese").textContent=w.translation;document.getElementById("review-story-content").textContent=getStory(w.word);document.getElementById("review-progress-fill").style.width=((gameState.reviewIndex+1)/gameState.reviewWords.length)*100+"%";document.getElementById("review-progress-label").textContent=(gameState.reviewIndex+1)+"/"+gameState.reviewWords.length;document.getElementById("review-feedback-area").innerHTML="";charImg.src=CHARACTERS.funny;setCharacterAnimation(charContainer.id,"idle");document.getElementById("review-story-btn").classList.remove("playing");document.getElementById("review-story-btn-text").textContent="听故事";stopSpeaking(charImg)}
+function nextWord(){gameState.currentIndex++;updateLearnUI()}
+function nextReview(){gameState.reviewIndex++;updateReviewUI()}
+function showComplete(){soundManager.playComplete();document.getElementById("complete-title").textContent=MESSAGES.complete[Math.floor(Math.random()*MESSAGES.complete.length)];document.getElementById("complete-message").textContent=gameState.isReviewMode?"复习完成":"学习完成";document.getElementById("xp-earned").innerHTML="<span>+"+gameState.sessionXP+" XP</span>";document.getElementById("stat-correct").textContent=gameState.sessionCorrect;document.getElementById("stat-learned").textContent=gameState.learnedWords.length;document.getElementById("stat-level").textContent="Lv."+gameState.currentLevel;if(!gameState.isReviewMode){gameState.currentLevelIndex++;if(gameState.currentLevelIndex>gameState.totalLevels){gameState.currentLevelIndex=1}}saveGameState();updateUI();createConfetti();switchPage("complete-page");document.getElementById("learned-count").textContent=gameState.learnedWords.length}
+
+document.addEventListener("DOMContentLoaded",function(){loadGameState();loadWords();document.getElementById("start-btn").onclick=function(){showLoading();var _this=this;setTimeout(function(){hideLoading();startLearning()},300)};document.getElementById("review-btn").onclick=startReview;document.getElementById("back-btn").onclick=function(){saveGameState();switchPage("home-page");updateUI()};document.getElementById("review-back-btn").onclick=function(){saveGameState();switchPage("home-page");updateUI()};document.getElementById("continue-btn").onclick=function(){showLoading();setTimeout(function(){hideLoading();startLearning()},300)};document.getElementById("home-btn").onclick=function(){switchPage("home-page");updateUI()};document.getElementById("play-sound-btn").onclick=async function(){if(gameState.isSpeaking)return;var btn=this;var btnText=btn.querySelector("span:last-child");var charImg=document.getElementById("learn-character");var w=gameState.currentWords[gameState.currentIndex];btn.classList.add("playing");btnText.textContent="播放中";startSpeaking(charImg);await playTTS(w.word);setTimeout(async function(){await playTTS(w.translation,"zh-CN");stopSpeaking(charImg);btn.classList.remove("playing");btnText.textContent="听发音"},600)};document.getElementById("story-btn").onclick=async function(){if(gameState.isSpeaking)return;var btn=this;var charImg=document.getElementById("learn-character");var w=gameState.currentWords[gameState.currentIndex];var storyText=getStory(w.word);btn.classList.add("playing");document.getElementById("story-btn-text").textContent="播放中";startSpeaking(charImg);await playStoryTTS(storyText);stopSpeaking(charImg);btn.classList.remove("playing");document.getElementById("story-btn-text").textContent="听故事"};document.getElementById("record-btn").onclick=function(){var icon=document.getElementById("record-icon");var text=document.getElementById("record-text");gameState.isRecording?stopRecording(this,text,icon):startRecording(this,text,icon)};document.getElementById("review-play-btn").onclick=async function(){if(gameState.isSpeaking)return;var btn=this;var btnText=btn.querySelector("span:last-child");var charImg=document.getElementById("review-character");var w=gameState.reviewWords[gameState.reviewIndex];btn.classList.add("playing");btnText.textContent="播放中";startSpeaking(charImg);await playTTS(w.word);setTimeout(async function(){await playTTS(w.translation,"zh-CN");stopSpeaking(charImg);btn.classList.remove("playing");btnText.textContent="听发音"},600)};document.getElementById("review-story-btn").onclick=async function(){if(gameState.isSpeaking)return;var btn=this;var charImg=document.getElementById("review-character");var w=gameState.reviewWords[gameState.reviewIndex];var storyText=getStory(w.word);btn.classList.add("playing");document.getElementById("review-story-btn-text").textContent="播放中";startSpeaking(charImg);await playStoryTTS(storyText);stopSpeaking(charImg);btn.classList.remove("playing");document.getElementById("review-story-btn-text").textContent="听故事"};document.getElementById("review-record-btn").onclick=function(){var icon=document.getElementById("review-record-icon");var text=document.getElementById("review-record-text");gameState.isRecording?stopRecording(this,text,icon):startRecording(this,text,icon)}});
+</script>
+</body>
+</html>
