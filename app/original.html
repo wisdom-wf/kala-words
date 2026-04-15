@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小卡拉趣味记单词</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 首页 -->
+        <div id="home-page" class="page active">
+            <div class="home-content">
+                <div class="character-container">
+                    <img src="../角色设计/小卡拉_开心打招呼.jpg" alt="小卡拉" class="character-img pulse" id="home-character">
+                </div>
+                <h1 class="app-title">小卡拉趣味记单词</h1>
+                <p class="app-slogan">卡拉卡拉，故事来啦！</p>
+                <div class="progress-info">
+                    <span class="progress-icon">📚</span>
+                    <span class="progress-text">已学习 <span id="learned-count">0</span> 个单词</span>
+                </div>
+                <button class="btn btn-primary btn-large" id="start-btn">
+                    <span class="btn-icon">🎯</span>
+                    开始学习
+                </button>
+                <button class="btn btn-secondary btn-small" id="review-btn">
+                    <span class="btn-icon">🔄</span>
+                    复习已学单词
+                </button>
+            </div>
+            <div class="decoration decoration-left"></div>
+            <div class="decoration decoration-right"></div>
+        </div>
+
+        <!-- 单词学习页 -->
+        <div id="learn-page" class="page">
+            <div class="learn-header">
+                <button class="btn btn-back" id="back-btn">
+                    <span>🏠</span> 返回
+                </button>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <span class="progress-label" id="progress-label">1/10</span>
+            </div>
+            
+            <div class="learn-content">
+                <div class="character-container learn-character">
+                    <img src="../角色设计/小卡拉_认真思考.jpg" alt="小卡拉" class="character-img" id="learn-character">
+                </div>
+                
+                <div class="word-card">
+                    <div class="word-english" id="word-english">apple</div>
+                    <div class="word-chinese" id="word-chinese">苹果</div>
+                </div>
+                
+                <div class="story-box">
+                    <div class="story-header">
+                        <span class="story-icon">📖</span>
+                        <span class="story-title">卡拉的故事</span>
+                    </div>
+                    <div class="story-content" id="story-content">
+                        小卡拉今天在果园里看到一颗红红的苹果树...
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-audio" id="play-sound-btn">
+                        <span class="btn-icon">🔊</span>
+                        听发音
+                    </button>
+                    <button class="btn btn-record" id="record-btn">
+                        <span class="btn-icon" id="record-icon">🎤</span>
+                        <span id="record-text">跟读录音</span>
+                    </button>
+                </div>
+                
+                <div class="feedback-area" id="feedback-area">
+                    <!-- 反馈信息会显示在这里 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 复习页 -->
+        <div id="review-page" class="page">
+            <div class="learn-header">
+                <button class="btn btn-back" id="review-back-btn">
+                    <span>🏠</span> 返回
+                </button>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="review-progress-fill"></div>
+                </div>
+                <span class="progress-label" id="review-progress-label">1/5</span>
+            </div>
+            
+            <div class="learn-content">
+                <div class="character-container learn-character">
+                    <img src="../角色设计/小卡拉_调皮鬼脸.jpg" alt="小卡拉" class="character-img" id="review-character">
+                </div>
+                
+                <div class="word-card review-card">
+                    <div class="word-english" id="review-word-english">apple</div>
+                    <div class="word-chinese" id="review-word-chinese">苹果</div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-audio" id="review-play-btn">
+                        <span class="btn-icon">🔊</span>
+                        听发音
+                    </button>
+                    <button class="btn btn-record" id="review-record-btn">
+                        <span class="btn-icon" id="review-record-icon">🎤</span>
+                        <span id="review-record-text">跟读录音</span>
+                    </button>
+                </div>
+                
+                <div class="feedback-area" id="review-feedback-area">
+                    <!-- 反馈信息会显示在这里 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 完成页 -->
+        <div id="complete-page" class="page">
+            <div class="complete-content">
+                <div class="character-container">
+                    <img src="../角色设计/小卡拉_得意欢呼.jpg" alt="小卡拉" class="character-img bounce" id="complete-character">
+                </div>
+                <h1 class="complete-title">太棒啦！🎉</h1>
+                <p class="complete-message" id="complete-message">你已经完成了本次学习！</p>
+                <div class="complete-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">✅</span>
+                        <span class="stat-value" id="stat-correct">0</span>
+                        <span class="stat-label">答对</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">📚</span>
+                        <span class="stat-value" id="stat-learned">0</span>
+                        <span class="stat-label">已学单词</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-large" id="continue-btn">
+                    <span class="btn-icon">🚀</span>
+                    继续学习
+                </button>
+                <button class="btn btn-secondary btn-small" id="home-btn">
+                    <span class="btn-icon">🏠</span>
+                    返回首页
+                </button>
+            </div>
+        </div>
+
+        <!-- 加载动画 -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">小卡拉在准备...</p>
+        </div>
+
+        <!-- Toast提示 -->
+        <div class="toast" id="toast">
+            <span class="toast-icon">✓</span>
+            <span class="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

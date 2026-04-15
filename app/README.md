@@ -1,220 +1,352 @@
-# 小卡拉趣味记单词
+# 小卡拉趣味记单词 - 开发文档
 
-🎉 面向7-8岁小学生的趣味英语学习H5应用
+<div align="center">
 
-## 目录说明
+![Platform](https://img.shields.io/badge/Platform-H5-blue.svg)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)
+![CSS](https://img.shields.io/badge/CSS3-Custom%20Properties-264de4.svg)
 
-```
-./趣味记单词/
-├── app/                    # 应用代码目录
-│   ├── index.html         # 主页面
-│   ├── styles.css         # 样式文件
-│   ├── app.js             # 应用逻辑
-│   └── README.md          # 本文件
-├── 词库/                   # 单词库
-│   └── 二年级词库.json    # 人教版二年级英语词库
-└── 角色设计/               # 小卡拉角色图片
-    ├── 小卡拉_开心打招呼.jpg
-    ├── 小卡拉_得意欢呼.jpg
-    ├── 小卡拉_认真思考.jpg
-    └── 小卡拉_调皮鬼脸.jpg
-```
-
-## 功能特性
-
-- ✅ 首页展示小卡拉形象，显示学习进度
-- ✅ 单词学习：英文+中文+趣味故事
-- ✅ 语音播放：TTS发音
-- ✅ 跟读录音：ASR语音识别
-- ✅ 智能评测：判断跟读正确与否
-- ✅ 即时反馈：答对欢呼/答错鼓励再试
-- ✅ 复习模式：复习已学单词
-- ✅ 进度展示：学习统计
-
-## 本地运行
-
-### 方式一：直接打开（推荐）
-
-1. 直接双击 `index.html` 文件在浏览器中打开
-
-### 方式二：使用本地服务器
-
-```bash
-# Python 3
-python -m http.server 8080
-
-# Node.js
-npx serve .
-```
-
-然后访问 http://localhost:8080
-
-### 方式三：VS Code Live Server
-
-使用 VS Code 的 Live Server 插件，右键点击 `index.html` → "Open with Live Server"
-
-## 部署上线
-
-### 静态托管平台（免费）
-
-1. **Vercel**
-   ```bash
-   npx vercel
-   ```
-
-2. **Netlify**
-   ```bash
-   npx netlify deploy
-   ```
-
-3. **GitHub Pages**
-   - 创建仓库，上传代码
-   - Settings → Pages → 选择 main branch
-
-4. **阿里云/腾讯云 OSS**
-   - 上传整个 `app` 目录
-   - 设置静态网站托管
-
-### 部署结构
-
-确保部署时保持目录结构不变：
-```
-your-domain/
-├── index.html
-├── styles.css
-├── app.js
-├── 词库/
-│   └── 二年级词库.json
-└── 角色设计/
-    └── *.jpg
-```
-
-## MiniMax API 配置
-
-### 当前状态
-
-应用默认使用浏览器内置的 **Web Speech API**（TTS+ASR），无需额外配置即可使用。
-
-### MiniMax API 接入（可选）
-
-如需使用 MiniMax API 获取更好的语音效果，按以下步骤操作：
-
-1. **获取 API Key**
-   - 注册 MiniMax API：https://platform.minimaxi.com/
-   - 创建应用获取 API Key
-
-2. **TTS 语音合成**
-   ```javascript
-   // 在 app.js 中配置
-   const API_KEY = 'your-api-key';
-   const GROUP_ID = 'your-group-id';
-   
-   async function textToSpeech(text) {
-       const response = await fetch(`https://api.minimax.chat/v1/t2a_v2?GroupId=${GROUP_ID}`, {
-           method: 'POST',
-           headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${API_KEY}`
-           },
-           body: JSON.stringify({
-               model: 'speech-02-hd',
-               text: text,
-               stream: false,
-               voice_setting: {
-                   voice_id: 'male-qn-qingse',
-                   speed: 1.0
-               }
-           })
-       });
-       // 处理音频响应...
-   }
-   ```
-
-3. **ASR 语音识别**
-   ```javascript
-   async function speechToText(audioBlob) {
-       // 转换音频为 base64
-       const base64 = await blobToBase64(audioBlob);
-       
-       const response = await fetch(`https://api.minimax.chat/v1/asr?GroupId=${GROUP_ID}`, {
-           method: 'POST',
-           headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${API_KEY}`
-           },
-           body: JSON.stringify({
-               model: 'semantic_asr',
-               audio_file: base64
-           })
-       });
-       // 返回识别结果...
-   }
-   ```
-
-## 技术说明
-
-### 技术栈
-- HTML5 + CSS3 + JavaScript（原生）
-- 无需构建工具，纯前端实现
-
-### 浏览器兼容性
-- Chrome 33+ ✅
-- Safari 14.1+ ✅
-- Edge 79+ ✅
-- 微信内置浏览器 ✅
-
-### 依赖特性
-- Web Speech API（语音合成+识别）
-- MediaRecorder API（录音功能）
-- localStorage（本地存储学习进度）
-- CSS3 Animations（动画效果）
-
-## 目录结构
-
-```
-./趣味记单词/app/
-├── index.html          # 主HTML文件（所有页面）
-├── styles.css         # 样式表
-├── app.js             # JavaScript逻辑
-└── README.md           # 说明文档
-```
-
-## 使用流程
-
-1. 打开应用 → 显示小卡拉首页
-2. 点击「开始学习」→ 随机抽取10个单词
-3. 学习每个单词：
-   - 查看单词和故事
-   - 点击「听发音」→ 播放英文+中文
-   - 点击「跟读录音」→ 录音并识别
-   - 正确 → 欢呼动画进入下一个
-   - 错误 → 鼓励再试
-4. 学习完成 → 显示统计
-5. 可选「复习」已学单词
-
-## 自定义词库
-
-修改 `../词库/二年级词库.json` 或替换为其他 JSON 文件，格式：
-
-```json
-{
-  "books": [{
-    "units": [{
-      "words": [
-        {"word": "apple", "translation": "苹果"},
-        {"word": "cat", "translation": "猫"}
-      ]
-    }]
-  }]
-}
-```
-
-## 注意事项
-
-1. **录音权限**：首次使用需允许麦克风权限
-2. **网络**：语音识别需要网络连接
-3. **存储**：学习进度保存在浏览器本地
+</div>
 
 ---
 
-💪 **卡拉卡拉，故事来啦！** - 让每个单词都变成有趣的故事！
+## 📁 项目结构
+
+```
+app/
+├── index.html      # 单文件完整版（推荐，直接打开即可运行）
+├── original.html   # 原始分文件版入口
+├── styles.css      # 样式文件
+├── app.js          # 应用逻辑
+└── README.md       # 本文档
+```
+
+## 🚀 本地开发
+
+### 快速开始
+
+1. **单文件版本（推荐）**
+   ```bash
+   # 直接打开 index.html 即可运行
+   open index.html
+   ```
+
+2. **分文件版本**
+   ```bash
+   # 需要启动本地服务器（确保路径正确加载）
+   cd app
+   python -m http.server 8080
+   # 访问 http://localhost:8080/original.html
+   ```
+
+### 环境要求
+
+- 现代浏览器（Chrome 80+、Safari 14+、Firefox 75+、Edge 80+）
+- 麦克风权限（用于跟读功能）
+- 网络连接（加载外部资源，或使用离线版本）
+
+## 🎨 代码结构
+
+### 1. HTML结构 (original.html)
+
+```html
+<!-- 主要页面 -->
+<div id="app">
+    <div id="home-page" class="page active">...</div>      <!-- 首页 -->
+    <div id="learn-page" class="page">...</div>           <!-- 学习页 -->
+    <div id="review-page" class="page">...</div>          <!-- 复习页 -->
+    <div id="complete-page" class="page">...</div>         <!-- 完成页 -->
+</div>
+```
+
+### 2. 状态管理 (app.js)
+
+```javascript
+const state = {
+    wordList: [],        // 词库列表
+    currentWords: [],    // 当前学习单词
+    currentIndex: 0,     // 当前索引
+    reviewWords: [],     // 复习单词
+    reviewIndex: 0,      // 复习索引
+    mediaRecorder: null, // 录音器
+    isRecording: false,  // 录音状态
+    sessionCorrect: 0,   // 本次正确数
+    totalLearned: 0,     // 已学总数
+    isReviewMode: false   // 是否复习模式
+};
+```
+
+### 3. 故事库
+
+```javascript
+const STORIES = {
+    cat: '小卡拉的邻居有一只超级可爱的小猫咪...',
+    dog: '小卡拉养了一只小狗...',
+    apple: '小卡拉今天吃了一个红红的大苹果...',
+    // ...
+    default: '小卡拉今天学了一个新单词...'
+};
+```
+
+### 4. 角色图片
+
+```javascript
+const CHARACTERS = {
+    greeting: '../images/小卡拉_开心打招呼.jpg',
+    think: '../images/小卡拉_认真思考.jpg',
+    happy: '../images/小卡拉_得意欢呼.jpg',
+    funny: '../images/小卡拉_调皮鬼脸.jpg'
+};
+```
+
+## 🔧 核心API
+
+### TTS - 文字转语音
+
+```javascript
+// 使用 Web Speech API
+function playTTS(text, lang = 'en-US') {
+    return new Promise((resolve) => {
+        if ('speechSynthesis' in window) {
+            speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = lang === 'en-US' ? 0.85 : 0.9;
+            utterance.onend = () => resolve(true);
+            utterance.onerror = () => resolve(false);
+            speechSynthesis.speak(utterance);
+        } else {
+            resolve(false);
+        }
+    });
+}
+```
+
+### ASR - 语音识别
+
+```javascript
+// 使用 Web Speech Recognition API
+function startASR() {
+    return new Promise((resolve) => {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SR();
+        recognition.lang = 'en-US';
+        recognition.continuous = false;
+        recognition.onresult = (e) => resolve(e.results[0][0].transcript.toLowerCase());
+        recognition.onerror = () => resolve('');
+        recognition.start();
+        // 8秒超时
+        setTimeout(() => { recognition.stop(); resolve(''); }, 8000);
+    });
+}
+```
+
+### 录音功能
+
+```javascript
+async function startRecording(btn, textEl, iconEl) {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    state.mediaRecorder = new MediaRecorder(stream);
+    state.mediaRecorder.ondataavailable = e => state.audioChunks.push(e.data);
+    state.mediaRecorder.onstop = async () => {
+        // 停止录音后进行语音识别
+        const text = await startASR();
+        checkResult(text, btn, textEl, iconEl);
+    };
+    state.mediaRecorder.start();
+    state.isRecording = true;
+    // 10秒自动停止
+    setTimeout(() => { if (state.isRecording) stopRecording(btn, textEl, iconEl); }, 10000);
+}
+```
+
+### 发音检查
+
+```javascript
+// 使用 Levenshtein 距离计算相似度
+function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array(m+1).fill().map(() => Array(n+1).fill(0));
+    for(let i=0;i<=m;i++) dp[i][0]=i;
+    for(let j=0;j<=n;j++) dp[0][j]=j;
+    for(let i=1;i<=m;i++) 
+        for(let j=1;j<=n;j++) 
+            dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1])+1;
+    return dp[m][n];
+}
+
+// 检查结果（允许最多2个字符的编辑距离）
+const correct = text.includes(target) || levenshtein(text, target) <= 2;
+```
+
+## 📝 自定义词库
+
+### 方式一：修改内置词库
+
+编辑 `index.html` 中的 `WORD_DATA` 变量：
+
+```javascript
+var WORD_DATA = {
+    "books": [{
+        "semester": "上册",
+        "units": [{
+            "unit": 1,
+            "words": [
+                {"word": "apple", "translation": "苹果"},
+                {"word": "cat", "translation": "猫"}
+                // 添加更多单词...
+            ]
+        }]
+    }]
+};
+```
+
+### 方式二：外部JSON文件
+
+```javascript
+async function loadWords() {
+    try {
+        const res = await fetch('../data/words.json');
+        const data = await res.json();
+        state.wordList = [];
+        data.books.forEach(book => 
+            book.units.forEach(unit => 
+                state.wordList.push(...unit.words)
+            )
+        );
+    } catch (e) {
+        state.wordList = DEFAULT_WORDS;
+    }
+}
+```
+
+### 词库JSON格式
+
+```json
+{
+  "books": [
+    {
+      "semester": "上册",
+      "units": [
+        {
+          "unit": 1,
+          "title": "Unit Title",
+          "words": [
+            {"word": "word", "translation": "翻译", "part_of_speech": "词性"}
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## 🎨 自定义样式
+
+### CSS变量
+
+```css
+:root {
+    --primary: #FF6B6B;          /* 主色调 */
+    --secondary: #4ECDC4;        /* 辅助色 */
+    --bg-main: #FFF9E6;         /* 背景色 */
+    --success: #00B894;          /* 成功色 */
+    --error: #D63031;            /* 错误色 */
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --radius-md: 20px;
+}
+```
+
+### 添加新页面
+
+1. HTML中添加页面结构
+2. CSS中添加页面样式
+3. JavaScript中添加页面切换逻辑
+
+```javascript
+function switchPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+}
+```
+
+## 🔗 外部API集成
+
+### MiniMax API（可选）
+
+如需更优质的语音服务，可集成MiniMax API：
+
+```javascript
+// TTS示例
+async function playMiniMaxTTS(text, lang) {
+    const response = await fetch('https://api.minimax.chat/v1/t2a', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'speech-01',
+            text: text,
+            stream: false
+        })
+    });
+    // 处理音频响应
+}
+```
+
+## 🧪 测试
+
+### 手动测试清单
+
+- [ ] 首页加载正常
+- [ ] 点击开始学习进入学习页
+- [ ] 播放发音正常
+- [ ] 录音功能正常（需麦克风权限）
+- [ ] 发音识别正确
+- [ ] 答对/答错反馈动画正常
+- [ ] 复习功能正常
+- [ ] 学习完成页正常
+- [ ] LocalStorage数据持久化正常
+
+### 浏览器兼容性
+
+| 特性 | Chrome | Safari | Firefox | Edge |
+|:---|:---:|:---:|:---:|:---:|
+| Speech Synthesis | ✅ | ✅ | ✅ | ✅ |
+| Speech Recognition | ✅ | ✅ | ❌ | ✅ |
+| MediaRecorder | ✅ | ✅ | ✅ | ✅ |
+| LocalStorage | ✅ | ✅ | ✅ | ✅ |
+
+## 📱 响应式设计
+
+```css
+@media (max-width: 480px) {
+    .app-title { font-size: 1.8rem; }
+    .character-img { width: 160px; height: 160px; }
+    .word-card { padding: 20px 30px; }
+    .action-buttons { flex-direction: column; }
+}
+```
+
+## 🔒 安全注意事项
+
+1. **不要提交敏感信息**
+   - API密钥不要硬编码在代码中
+   - 使用环境变量或后端代理
+
+2. **麦克风权限**
+   - 始终请求用户授权
+   - 提供清晰的使用说明
+
+3. **数据存储**
+   - LocalStorage仅用于本地存储
+   - 不存储敏感个人信息
+
+## 📄 许可证
+
+本项目采用 MIT 许可证
+
+---
+
+*文档最后更新: 2024*
